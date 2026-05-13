@@ -13,12 +13,30 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
-    # Rocketride
-    rocketride_uri: str = "ws://localhost:5565"
-    rocketride_apikey: str = ""
-    rocketride_analyze_pipeline: str = "pr_analyzer"
-    rocketride_chat_pipeline: str = "pr_chat"
-    rocketride_criteria_pipeline: str = "commit_criteria"
+    # Rocketride (Quickstart: ROCKETRIDE_URI / ROCKETRIDE_APIKEY)
+    rocketride_uri: str = Field(
+        default="ws://localhost:5565",
+        validation_alias=AliasChoices("ROCKETRIDE_URI", "ROCKETRIDE_URL"),
+    )
+    rocketride_apikey: str = Field(
+        default="",
+        validation_alias=AliasChoices("ROCKETRIDE_APIKEY", "ROCKETRIDE_API_KEY"),
+    )
+    rocketride_analyze_pipeline: str = Field(
+        default="pr_analyzer",
+        validation_alias=AliasChoices(
+            "ROCKETRIDE_ANALYZE_PIPELINE",
+            "ROCKETRIDE_PIPELINE",
+        ),
+    )
+    rocketride_chat_pipeline: str = "pr_chat"  # reserved; chat uses analyze pipeline token today
+    rocketride_criteria_pipeline: str = Field(
+        default="commit_criteria",
+        validation_alias=AliasChoices(
+            "ROCKETRIDE_CRITERIA_PIPELINE",
+            "ROCKETRIDE_COMMIT_CRITERIA_PIPELINE",
+        ),
+    )
 
     # Commit criteria ingestion
     criteria_repo: str = "rocketride-io/rocketride-server"
