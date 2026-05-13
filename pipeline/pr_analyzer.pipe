@@ -1,0 +1,256 @@
+{
+  "name": "",
+  "description": "",
+  "components": [
+    {
+      "id": "webhook_1",
+      "provider": "webhook",
+      "name": "Web Hook",
+      "config": {
+        "hideForm": true,
+        "mode": "Source",
+        "parameters": {},
+        "type": "webhook"
+      },
+      "ui": {
+        "position": {
+          "x": -388,
+          "y": 60
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      }
+    },
+    {
+      "id": "parse_1",
+      "provider": "parse",
+      "name": "Parser",
+      "config": {},
+      "ui": {
+        "position": {
+          "x": -109.35888778550148,
+          "y": -150.2156901688183
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "tags",
+          "from": "webhook_1"
+        }
+      ]
+    },
+    {
+      "id": "preprocessor_1",
+      "provider": "preprocessor_langchain",
+      "name": "General Text",
+      "config": {
+        "profile": "default",
+        "default": {
+          "mode": "strlen",
+          "splitter": "RecursiveCharacterTextSplitter",
+          "strlen": 512
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 144.32972258916772,
+          "y": -130.02007926023782
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "text",
+          "from": "parse_1"
+        },
+        {
+          "lane": "table",
+          "from": "parse_1"
+        }
+      ]
+    },
+    {
+      "id": "qdrant_1",
+      "provider": "qdrant",
+      "name": "Qdrant",
+      "config": {
+        "profile": "cloud",
+        "cloud": {
+          "host": "${ROCKETRIDE_QDRANT_HOST}",
+          "port": 6333,
+          "apikey": "${ROCKETRIDE_QDRANT_APIKEY}",
+          "collection": "pr_analyzer",
+          "score": 0
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 680,
+          "y": -60
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "documents",
+          "from": "embedding_transformer_1"
+        },
+        {
+          "lane": "questions",
+          "from": "conditional_questions_1",
+          "branch": 0
+        }
+      ]
+    },
+    {
+      "id": "llm_anthropic_1",
+      "provider": "llm_anthropic",
+      "name": "prueba",
+      "config": {
+        "profile": "claude-sonnet-4-6",
+        "claude-sonnet-4-6": {
+          "apikey": "${ROCKETRIDE_ANTHROPIC_APIKEY}"
+        },
+        "parameters": {
+          "system_prompt": "You are an expert AI assistant helping development teams review and understand GitHub Pull Requests. You have access to the full PR content stored in the vector database, including titles, descriptions, code diffs, and file changes. Answer questions clearly and specifically, referencing the actual PR content. When asked to analyze a PR, respond with a JSON object with fields: topics (array from: vectordb, engine, llms, integrations, ui, bugfix, docs, testing, devops, other), summary, recommendation (merge/keep/discard/combine), score (0-100), reasoning.",
+          "google": {}
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 880,
+          "y": -60
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "qdrant_1"
+        },
+        {
+          "lane": "questions",
+          "from": "qdrant_2"
+        }
+      ]
+    },
+    {
+      "id": "response_answers_1",
+      "provider": "response_answers",
+      "name": "Return Answers",
+      "config": {
+        "laneName": "answers"
+      },
+      "ui": {
+        "position": {
+          "x": 1060,
+          "y": -60
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "answers",
+          "from": "llm_anthropic_1"
+        }
+      ]
+    },
+    {
+      "id": "embedding_transformer_1",
+      "provider": "embedding_transformer",
+      "name": "Transformer",
+      "config": {
+        "profile": "miniLM"
+      },
+      "ui": {
+        "position": {
+          "x": 310,
+          "y": -290
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "documents",
+          "from": "preprocessor_1"
+        },
+        {
+          "lane": "questions",
+          "from": "webhook_1"
+        }
+      ]
+    },
+    {
+      "id": "conditional_questions_1",
+      "provider": "conditional_questions",
+      "name": "Conditional (questions)",
+      "config": {
+        "name": "Conditional (questions)"
+      },
+      "ui": {
+        "position": {
+          "x": 410,
+          "y": -80
+        },
+        "nodeType": "default",
+        "formDataValid": false
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "embedding_transformer_1"
+        }
+      ]
+    },
+    {
+      "id": "qdrant_2",
+      "provider": "qdrant",
+      "name": "Qdrant",
+      "config": {
+        "profile": "cloud",
+        "cloud": {
+          "collection": "ROCKETRIDE",
+          "port": 6333,
+          "score": 0.7
+        },
+        "name": "Qdrant"
+      },
+      "ui": {
+        "position": {
+          "x": 670,
+          "y": -260
+        },
+        "nodeType": "default",
+        "formDataValid": false
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "conditional_questions_1",
+          "branch": 1
+        },
+        {
+          "lane": "documents",
+          "from": "embedding_transformer_1"
+        }
+      ]
+    }
+  ],
+  "project_id": "e874bee6-1e3a-4a57-a011-f29d66e671a3",
+  "version": 1,
+  "docRevision": 81,
+  "source": "webhook_1",
+  "isLocked": false,
+  "snapToGrid": true,
+  "snapGridSize": [
+    10,
+    10
+  ]
+}

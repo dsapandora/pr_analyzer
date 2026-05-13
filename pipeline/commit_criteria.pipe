@@ -1,0 +1,189 @@
+{
+  "components": [
+    {
+      "id": "webhook_1",
+      "provider": "webhook",
+      "name": "Web Hook",
+      "config": {
+        "hideForm": true,
+        "mode": "Source",
+        "parameters": {},
+        "type": "webhook"
+      },
+      "ui": {
+        "position": {
+          "x": -220,
+          "y": -230
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      }
+    },
+    {
+      "id": "parse_1",
+      "provider": "parse",
+      "name": "Parser",
+      "config": {},
+      "ui": {
+        "position": {
+          "x": 0,
+          "y": -250
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "tags",
+          "from": "webhook_1"
+        }
+      ]
+    },
+    {
+      "id": "preprocessor_1",
+      "provider": "preprocessor_langchain",
+      "name": "General Text",
+      "config": {
+        "profile": "default",
+        "default": {
+          "mode": "strlen",
+          "splitter": "RecursiveCharacterTextSplitter",
+          "strlen": 512
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 210,
+          "y": -210
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "text",
+          "from": "parse_1"
+        },
+        {
+          "lane": "table",
+          "from": "parse_1"
+        }
+      ]
+    },
+    {
+      "id": "embedding_transformer_1",
+      "provider": "embedding_transformer",
+      "name": "Transformer",
+      "config": {
+        "profile": "miniLM"
+      },
+      "ui": {
+        "position": {
+          "x": 460,
+          "y": -200
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "webhook_1"
+        },
+        {
+          "lane": "documents",
+          "from": "preprocessor_1"
+        }
+      ]
+    },
+    {
+      "id": "qdrant_1",
+      "provider": "qdrant",
+      "name": "Qdrant",
+      "config": {
+        "profile": "cloud",
+        "cloud": {
+          "host": "${ROCKETRIDE_QDRANT_HOST}",
+          "port": 6333,
+          "apikey": "${ROCKETRIDE_QDRANT_APIKEY}",
+          "collection": "commit_criteria",
+          "score": 0
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 650,
+          "y": -210
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "documents",
+          "from": "embedding_transformer_1"
+        }
+      ]
+    },
+    {
+      "id": "llm_anthropic_1",
+      "provider": "llm_anthropic",
+      "name": "Anthropic",
+      "config": {
+        "profile": "claude-sonnet-4-6",
+        "claude-sonnet-4-6": {
+          "apikey": "${ROCKETRIDE_ANTHROPIC_APIKEY}"
+        },
+        "parameters": {
+          "system_prompt": "You are an expert code analyst with deep knowledge of software engineering best practices. You have access to commit patterns from senior engineers stored in the vector database, including their code changes, commit messages, architectural decisions, and coding standards. When asked to evaluate code or assess a PR against these patterns, provide a detailed viability assessment. When asked to assess a PR, respond ONLY with a valid JSON object (no markdown, no code fences) with these fields: { \"viability_score\": 0-100, \"strengths\": [\"...\"], \"weaknesses\": [\"...\"], \"recommendations\": [\"...\"], \"overall_assessment\": \"...\" }. When asked about engineering patterns, describe the specific patterns, conventions, and quality standards evidenced by the stored commits."
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 830,
+          "y": -180
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "questions",
+          "from": "qdrant_1"
+        }
+      ]
+    },
+    {
+      "id": "response_answers_1",
+      "provider": "response_answers",
+      "name": "Return Answers",
+      "config": {
+        "laneName": "answers"
+      },
+      "ui": {
+        "position": {
+          "x": 1040,
+          "y": -170
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "answers",
+          "from": "llm_anthropic_1"
+        }
+      ]
+    }
+  ],
+  "project_id": "ad68eee4-f273-4ec0-8ebb-a1ad2951c071",
+  "version": 1,
+  "source": "webhook_1",
+  "isLocked": false,
+  "snapToGrid": true,
+  "snapGridSize": [
+    10,
+    10
+  ],
+  "docRevision": 123
+}
