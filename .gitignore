@@ -1,0 +1,14 @@
+.rocketride/
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+out/
+dist/
+__pycache__/
+*.py[cod]
+*.tsbuildinfo
+.DS_Store
+.venv/
+venv/
