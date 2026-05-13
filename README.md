@@ -104,15 +104,17 @@ flowchart LR
 
 ## Behavioural math (RAG + similarity)
 
-- **Embeddings** — Chunk text is mapped to $ \mathbf{e} \in \mathbb{R}^d $ (miniLM profile in the pipe). Stored vectors index each PR chunk in Qdrant.
-- **Retrieval score** — For query embedding $ \mathbf{q} $ and stored chunk $ \mathbf{c} $, Qdrant uses the **cosine metric** (equivalent to maximizing $ \mathbf{q}^{\top}\mathbf{c} $ when vectors are L2-normalized):
+GitHub renders math when the `$` delimiters touch the expression (no space right after `$` or before the closing `$`). See [Writing mathematical expressions](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions).
+
+- **Embeddings** — Chunk text is mapped to $\mathbf{e} \in \mathbb{R}^d$ (miniLM profile in the pipe). Stored vectors index each PR chunk in Qdrant.
+- **Retrieval score** — For query embedding $\mathbf{q}$ and stored chunk $\mathbf{c}$, Qdrant uses the **cosine metric** (equivalent to maximizing $\mathbf{q}^{\top}\mathbf{c}$ when vectors are L2-normalized):
 
 $$
 s(\mathbf{q}, \mathbf{c}) = \frac{\mathbf{q}^{\top}\mathbf{c}}{\|\mathbf{q}\|_2\,\|\mathbf{c}\|_2}.
 $$
 
-- **Duplicate / “similar PR” hints** — The LLM prompt asks for `similar_prs` using **retrieved neighbours** in vector space: high $ s $ means overlapping scope (subject to the pipeline’s top‑$K$ hits and the second Qdrant node’s **score threshold** in `pr_analyzer.pipe` for the `ROCKETRIDE` collection branch).
-- **Quality score** — The model emits a bounded scalar **score** $\in [0,100]$ and a discrete **recommendation** in $\{\texttt{merge}, \texttt{keep}, \texttt{discard}, \texttt{combine}\}$; these are **LLM outputs**, not a closed-form objective—treat them as calibrated heuristics.
+- **Duplicate / “similar PR” hints** — The LLM prompt asks for `similar_prs` using **retrieved neighbours** in vector space: high $s$ means overlapping scope (subject to the pipeline’s top-$K$ hits and the second Qdrant node’s **score threshold** in `pr_analyzer.pipe` for the `ROCKETRIDE` collection branch).
+- **Quality score** — The model emits a bounded scalar **score** in $[0,100]$ and a discrete **recommendation** in $\{\texttt{merge}, \texttt{keep}, \texttt{discard}, \texttt{combine}\}$; these are **LLM outputs**, not a closed-form objective—treat them as calibrated heuristics.
 
 ## Pipeline visual (reference diagram)
 
@@ -120,7 +122,7 @@ $$
 
 Source of truth for node IDs and wiring: [`pipeline/pr_analyzer.pipe`](pipeline/pr_analyzer.pipe). A separate graph [`pipeline/commit_criteria.pipe`](pipeline/commit_criteria.pipe) powers optional **commit / engineering-pattern** ingestion (`commit_criteria` collection).
 
-## Architecture (text)
+## Architecture overview
 
 ```
 Browser (Next.js) ──HTTPS/JWT──► FastAPI (Heroku or local)
