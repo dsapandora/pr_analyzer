@@ -388,3 +388,9 @@ Upload them to your RocketRide server’s pipeline directory (or equivalent depl
 ## License
 
 MIT
+
+---
+
+<p align="center">
+  <sub>Powered by <a href="https://github.com/rocketride-io">RocketRide</a></sub>
+</p>
